@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Checkout — ShineFix</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="checkout-header">
+  <div class="wrap">
+    <a href="index.html" class="back-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to product
+    </a>
+    <a href="index.html" class="brand" style="font-size:17px;">
+      <svg viewBox="0 0 40 40" fill="none" width="24" height="24"><circle cx="20" cy="20" r="20" fill="#0E9A94"/><path d="M10 24c2-8 8-13 10-13s8 5 10 13" stroke="#fff" stroke-width="2.2" stroke-linecap="round" fill="none"/><ellipse cx="20" cy="25" rx="11" ry="4" fill="#fff"/></svg>
+      ShineFix
+    </a>
+  </div>
+</header>
+
+<div class="checkout-wrap">
+
+  <div class="pay-card">
+    <h2>Complete your payment</h2>
+    <p style="color:var(--text-dim);font-size:14px;margin-top:8px;">Scan the QR code below with any UPI app (GPay, PhonePe, Paytm) and pay the exact amount shown, then fill in your details on the right so we can confirm and ship your order.</p>
+
+    <div class="qr-box">
+      <img src="qr_code.jpeg" alt="UPI payment QR code" />
+      <div class="qr-amount" id="qrAmount">549</div>
+      <div class="qr-upi">UPI ID: yourstore@upi &middot; Scan &amp; Pay</div>
+    </div>
+
+    <ul class="pay-steps">
+      <li><b>01</b> Scan the QR code above using your UPI app.</li>
+      <li><b>02</b> Pay the exact amount shown &mdash; do not round it up or down.</li>
+      <li><b>03</b> Copy the UTR / reference number your UPI app shows after payment.</li>
+      <li><b>04</b> Fill the form and hit send &mdash; we'll confirm your order by email.</li>
+    </ul>
+
+    <div class="order-recap">
+      <span>Order total</span>
+      <b>&#8377;<span id="recapAmount">549</span></b>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <h3>Your details</h3>
+    <p class="sub">We'll use this to confirm payment and ship your order.</p>
+
+    <form id="orderForm" novalidate>
+      <div class="field" data-field="name">
+        <label for="name">Full name</label>
+        <input type="text" id="name" name="name" placeholder="Your full name" autocomplete="name" />
+        <span class="err">Enter your name.</span>
+      </div>
+
+      <div class="field" data-field="email">
+        <label for="email">Email address</label>
+        <input type="email" id="email" name="email" placeholder="name@example.com" autocomplete="email" />
+        <span class="err">Enter a valid email.</span>
+      </div>
+
+      <div class="field" data-field="address">
+        <label for="address">Delivery address</label>
+        <textarea id="address" name="address" placeholder="House no, street, city, state"></textarea>
+        <span class="err">Enter your delivery address.</span>
+      </div>
+
+      <div class="field" data-field="pincode">
+        <label for="pincode">Pin code</label>
+        <input type="text" id="pincode" name="pincode" placeholder="6-digit pin code" inputmode="numeric" maxlength="6" />
+        <span class="err">Enter a valid 6-digit pin code.</span>
+      </div>
+
+      <div class="field" data-field="utr">
+        <label for="utr">UTR / transaction reference number</label>
+        <input type="text" id="utr" name="utr" placeholder="From your UPI payment confirmation" />
+        <span class="err">Enter the UTR number from your payment.</span>
+      </div>
+
+      <div class="field" data-field="message">
+        <label for="message">Message <span style="color:var(--text-faint);font-weight:400;">(optional)</span></label>
+        <textarea id="message" name="message" placeholder="Anything else we should know?"></textarea>
+      </div>
+
+      <input type="hidden" id="amount" name="amount" value="549" />
+      <input type="hidden" id="time" name="time" value="" />
+
+      <div class="form-submit">
+        <button type="submit" class="btn btn-dark btn-block" id="submitBtn">Send order details</button>
+      </div>
+      <p class="form-note">By sending, you confirm the payment above has been completed.</p>
+
+      <div class="status-box" id="statusBox"></div>
+    </form>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script>
+  (function () {
+    emailjs.init("o7LVVDuzlx3KGYtpm");
+
+    var params = new URLSearchParams(window.location.search);
+    var amount = params.get('amount');
+    if (!amount || isNaN(amount) || Number(amount) <= 0) amount = "549";
+    document.getElementById('qrAmount').textContent = amount;
+    document.getElementById('recapAmount').textContent = amount;
+    document.getElementById('amount').value = amount;
+
+    var form = document.getElementById('orderForm');
+    var statusBox = document.getElementById('statusBox');
+    var submitBtn = document.getElementById('submitBtn');
+
+    function setError(fieldName, show) {
+      var el = form.querySelector('[data-field="' + fieldName + '"]');
+      if (el) el.classList.toggle('invalid', show);
+    }
+
+    function validate() {
+      var ok = true;
+      var name = form.name.value.trim();
+      var email = form.email.value.trim();
+      var address = form.address.value.trim();
+      var pincode = form.pincode.value.trim();
+      var utr = form.utr.value.trim();
+
+      if (!name) { setError('name', true); ok = false; } else setError('name', false);
+
+      var emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+      if (!emailOk) { setError('email', true); ok = false; } else setError('email', false);
+
+      if (!address) { setError('address', true); ok = false; } else setError('address', false);
+
+      var pinOk = /^\d{6}$/.test(pincode);
+      if (!pinOk) { setError('pincode', true); ok = false; } else setError('pincode', false);
+
+      if (!utr) { setError('utr', true); ok = false; } else setError('utr', false);
+
+      return ok;
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      statusBox.className = 'status-box';
+
+      if (!validate()) {
+        statusBox.textContent = 'Please fix the highlighted fields before sending.';
+        statusBox.className = 'status-box show error';
+        return;
+      }
+
+      document.getElementById('time').value = new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner"></span> Sending...';
+
+      var templateParams = {
+        name: form.name.value.trim(),
+        email: form.email.value.trim(),
+        address: form.address.value.trim(),
+        pincode: form.pincode.value.trim(),
+        utr: form.utr.value.trim(),
+        amount: document.getElementById('amount').value,
+        message: form.message.value.trim() || 'No message provided',
+        time: document.getElementById('time').value
+      };
+
+      emailjs.send('service_dp5zyfr', 'template_p6tm18q', templateParams)
+        .then(function () {
+          statusBox.textContent = 'Order received. We will confirm your payment and ship soon — check your email for updates.';
+          statusBox.className = 'status-box show success';
+          form.reset();
+          document.getElementById('amount').value = amount;
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Send order details';
+        })
+        .catch(function (err) {
+          statusBox.textContent = 'Something went wrong sending your details. Please try again, or email us directly at pareshrawat101@gmail.com.';
+          statusBox.className = 'status-box show error';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Send order details';
+          console.error('EmailJS error:', err);
+        });
+    });
+  })();
+</script>
+</body>
+</html>
