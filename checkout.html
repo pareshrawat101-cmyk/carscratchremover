@@ -29,7 +29,7 @@
 
     <div class="qr-box">
       <img src="qr_code.jpeg" alt="UPI payment QR code" />
-      <div class="qr-amount" id="qrAmount">549</div>
+      <div class="qr-amount" id="qrAmount">249</div>
       <div class="qr-upi">UPI ID: yourstore@upi &middot; Scan &amp; Pay</div>
     </div>
 
@@ -42,7 +42,7 @@
 
     <div class="order-recap">
       <span>Order total</span>
-      <b>&#8377;<span id="recapAmount">549</span></b>
+      <b>&#8377;<span id="recapAmount">249</span></b>
     </div>
   </div>
 
@@ -86,7 +86,7 @@
         <textarea id="message" name="message" placeholder="Anything else we should know?"></textarea>
       </div>
 
-      <input type="hidden" id="amount" name="amount" value="549" />
+      <input type="hidden" id="amount" name="amount" value="249" />
       <input type="hidden" id="time" name="time" value="" />
 
       <div class="form-submit">
@@ -107,7 +107,7 @@
 
     var params = new URLSearchParams(window.location.search);
     var amount = params.get('amount');
-    if (!amount || isNaN(amount) || Number(amount) <= 0) amount = "549";
+    if (!amount || isNaN(amount) || Number(amount) <= 0) amount = "249";
     document.getElementById('qrAmount').textContent = amount;
     document.getElementById('recapAmount').textContent = amount;
     document.getElementById('amount').value = amount;
